@@ -1,63 +1,48 @@
-# Port Scanning
+# Host and Port Scanning
 
-> **Status:** Skeleton — Content to be added from Confluence
-> **Updated:** 2026-07-20
+> **Source:** Confluence Page 557801
+> **Updated:** 2026-01-30
 
 ## Overview
 
-Add topic overview here.
+Understanding port scanning is essential for reconnaissance. This guide covers TCP/UDP port scanning techniques, interpreting scan results, and identifying service states.
 
-## Prerequisites
+## Port States
 
-- Item 1
-- Item 2
+| **State** | **Description** |
+| --- | --- |
+| `open` | Connection established (TCP, UDP, SCTP) |
+| `closed` | Port responds with RST flag |
+| `filtered` | Cannot determine if open/closed |
+| `unfiltered` | Port accessible, state unknown |
+| `open\|filtered` | No response received |
+| `closed\|filtered` | Cannot determine state |
 
-## Key Concepts
+## Discovering Open TCP Ports
 
-- Concept 1
-- Concept 2
-- Concept 3
-
-## Step-by-Step Guide
-
-### Step 1: Setup
-Description here
-
-```bash
-# Commands here
-```
-
-### Step 2: Execution
-Description here
+### Scanning Top 10 TCP Ports
 
 ```bash
-# Commands here
+sudo nmap 10.129.2.28 --top-ports=10
 ```
 
-## Tools & Resources
+## Port States and Responses
 
-- Tool 1: Description
-- Tool 2: Description
+- **Open:** SYN-ACK response
+- **Closed:** RST response
+- **Filtered:** No response or ICMP error
 
-## Lab Exercises
+## Common Nmap Options
 
-### Exercise 1: Basic
-Hands-on practice scenario
-
-### Exercise 2: Intermediate
-More advanced practice
-
-## Common Pitfalls
-
-- Pitfall 1
-- Pitfall 2
-
-## References
-
-- [OWASP](https://owasp.org)
-- [HackTheBox Academy](https://academy.hackthebox.com)
+| **Option** | **Description** |
+| --- | --- |
+| `-p <port>` | Specify ports |
+| `--top-ports=<n>` | Scan top N ports |
+| `-sT` | TCP Connect scan |
+| `-sS` | TCP SYN scan |
+| `-sU` | UDP scan |
+| `-sV` | Service version detection |
 
 ---
 
-**Author:** Danny Stanfield
-**License:** MIT
+**Author:** Danny Stanfield | **License:** MIT

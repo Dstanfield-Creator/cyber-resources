@@ -1,63 +1,49 @@
 # Enumeration
 
-> **Status:** Skeleton — Content to be added from Confluence
-> **Updated:** 2026-07-20
+> **Source:** Confluence Page 491972
+> **Updated:** 2026-01-30
 
 ## Overview
 
-Add topic overview here.
+Enumeration is the critical phase of reconnaissance. Find all possible attack vectors, not just to gain access.
 
-## Prerequisites
+## The Core Principle
 
-- Item 1
-- Item 2
+> **Enumeration is the key.**
 
-## Key Concepts
+Most people think enumeration means "trying all the tools." In reality, it's about:
 
-- Concept 1
-- Concept 2
-- Concept 3
+1. Knowing how to interact with each service
+2. Understanding what's relevant in responses
+3. Doing manual enumeration of configurations
+4. Investigating beyond automated tools
 
-## Step-by-Step Guide
+## Why Enumeration Matters
 
-### Step 1: Setup
-Description here
+Investing hours to understand a service will save days of trying random exploits.
 
-```bash
-# Commands here
-```
+## Information You Need
 
-### Step 2: Execution
-Description here
+- Open ports and services
+- Service versions
+- Information provided by services
+- Operating system details
+- Misconfigurations
 
-```bash
-# Commands here
-```
+## Attack Vector Formula
 
-## Tools & Resources
+To gain access, find one of these:
 
-- Tool 1: Description
-- Tool 2: Description
+1. A function/resource that lets you interact with the target
+2. Information that provides access or pathways
 
-## Lab Exercises
+## Manual Enumeration is Critical
 
-### Exercise 1: Basic
-Hands-on practice scenario
-
-### Exercise 2: Intermediate
-More advanced practice
-
-## Common Pitfalls
-
-- Pitfall 1
-- Pitfall 2
-
-## References
-
-- [OWASP](https://owasp.org)
-- [HackTheBox Academy](https://academy.hackthebox.com)
+Automated tools have limits:
+- Timeouts mark unresponsive ports as closed
+- Can't bypass all security measures
+- Can't interpret meaning
 
 ---
 
-**Author:** Danny Stanfield
-**License:** MIT
+**Author:** Danny Stanfield | **License:** MIT

@@ -1,63 +1,49 @@
-# OSINT
+# Open-Source Intelligence (OSINT)
 
-> **Status:** Skeleton — Content to be added from Confluence
-> **Updated:** 2026-07-20
+> **Source:** Confluence Page 492152
+> **Updated:** 2026-01-30
 
 ## Overview
 
-Add topic overview here.
+OSINT finds publicly available information to reveal events, dependencies, connections, and sensitive data.
 
-## Prerequisites
+## Critical Security Gaps
 
-- Item 1
-- Item 2
+Attackers find:
+- Passwords (hardcoded in code)
+- Hashes (from breached databases)
+- SSH/API Keys (in public repos)
+- Tokens (in documentation)
+- Credentials (GitHub, StackOverflow)
 
-## Key Concepts
+## Common Sources
 
-- Concept 1
-- Concept 2
-- Concept 3
+- GitHub, GitLab, Bitbucket
+- StackOverflow (code with credentials)
+- SearchCode (public code search)
+- WHOIS, DNS records
+- Certificate transparency logs
 
-## Step-by-Step Guide
+## SSH Keys Risk
 
-### Step 1: Setup
-Description here
+Private SSH keys found in:
+- Public GitHub repos
+- Backup files
+- Docker images
+- Config files
 
-```bash
-# Commands here
-```
+**If exposed, revoke immediately.**
 
-### Step 2: Execution
-Description here
+## Defense
 
-```bash
-# Commands here
-```
-
-## Tools & Resources
-
-- Tool 1: Description
-- Tool 2: Description
-
-## Lab Exercises
-
-### Exercise 1: Basic
-Hands-on practice scenario
-
-### Exercise 2: Intermediate
-More advanced practice
-
-## Common Pitfalls
-
-- Pitfall 1
-- Pitfall 2
-
-## References
-
-- [OWASP](https://owasp.org)
-- [HackTheBox Academy](https://academy.hackthebox.com)
+- Scan repos for secrets
+- Use secret scanning tools
+- Implement .gitignore properly
+- Train developers on security
+- Rotate exposed credentials
+- Remove commits with secrets
+- Use environment variables
 
 ---
 
-**Author:** Danny Stanfield
-**License:** MIT
+**Author:** Danny Stanfield | **License:** MIT
