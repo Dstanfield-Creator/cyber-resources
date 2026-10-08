@@ -1,6 +1,6 @@
 # Open-Source Intelligence (OSINT)
 
-> **Source:** Confluence Page 492152
+> **Status:** Reference
 > **Updated:** 2026-01-30
 
 ## Overview

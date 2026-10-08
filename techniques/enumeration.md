@@ -1,6 +1,6 @@
 # Enumeration
 
-> **Source:** Confluence Page 491972
+> **Status:** Reference
 > **Updated:** 2026-01-30
 
 ## Overview

@@ -1,6 +1,6 @@
 # Password Attacks Online
 
-> **Source:** Confluence Page 491954
+> **Status:** Reference
 > **Updated:** 2026-01-30
 
 ## Overview

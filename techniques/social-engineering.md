@@ -1,6 +1,6 @@
 # Social Engineering
 
-> **Source:** Confluence Page 492080
+> **Status:** Reference
 > **Updated:** 2026-01-30
 
 ## Overview

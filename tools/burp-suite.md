@@ -1,61 +1,86 @@
 # Burp Suite
 
-> **Status:** Skeleton — Content to be added from Confluence
-> **Updated:** 2026-07-20
+> **Status:** Reference
+> **Updated:** 2026-10-08
 
 ## Overview
 
-Add topic overview here.
+Burp Suite is an integrated platform for web application security testing
+from PortSwigger. It works as an intercepting HTTP/S proxy that sits
+between a browser and a target web app, letting an analyst inspect,
+modify, and replay requests. The Community Edition covers manual testing
+(Proxy, Repeater, Decoder); the Professional edition adds the automated
+scanner and an unthrottled Intruder. In a lab it fits the web-app testing
+stage after reconnaissance, against targets you own.
 
-## Prerequisites
+## Install
 
-- Item 1
-- Item 2
+| Method | Source |
+| --- | --- |
+| Kali package | `sudo apt install burpsuite` |
+| Installer | https://portswigger.net/burp/releases |
+| JAR | Requires a Java 17+ runtime |
 
-## Key Concepts
+On first run, install Burp's CA certificate in the browser so HTTPS
+traffic can be intercepted without warnings.
 
-- Concept 1
-- Concept 2
-- Concept 3
+## Common Usage
 
-## Step-by-Step Guide
+Point the browser proxy at `127.0.0.1:8080`, then work against a lab app
+at `http://192.0.2.20` or `app.example.com` in your own lab.
 
-### Step 1: Setup
-Description here
+- **Proxy:** intercept a request, review headers and body, forward or
+  drop it. The HTTP history tab records all traffic.
+- **Repeater:** resend a captured request with small edits to study how
+  the app responds. This is the core manual-testing loop.
+- **Decoder/Comparer:** decode Base64/URL/hex values and diff responses.
+- **Intruder:** iterate a parameter over a wordlist (run gently in the
+  Community edition, which is rate-limited).
 
-```bash
-# Commands here
+```http
+POST /login HTTP/1.1
+Host: app.example.com
+Content-Type: application/x-www-form-urlencoded
+
+username=analyst&password=lab-test
 ```
 
-### Step 2: Execution
-Description here
+Keep all testing inside the lab and only against applications you are
+authorised to assess.
 
-```bash
-# Commands here
+## Detect
+
+Burp's traffic looks like a browser, but automated use and its defaults
+leave fingerprints in web server and WAF logs.
+
+- **Collaborator:** out-of-band testing uses Burp Collaborator domains.
+  Unexpected DNS or HTTP lookups to `*.oastify.com` (or a private
+  Collaborator server) are a strong indicator of active testing.
+- **Scanner patterns:** the scanner issues many parameter permutations
+  and probe strings in a short window from one source IP, producing
+  bursts of 4xx/5xx and anomalous parameter values in access logs.
+- **Headers:** probe payloads can appear in parameters and headers; tuned
+  WAF rules flag these signatures.
+
+```yaml
+title: Burp Collaborator Interaction
+logsource:
+  category: dns
+detection:
+  selection:
+    query|endswith: '.oastify.com'
+  condition: selection
+level: high
 ```
 
-## Tools & Resources
-
-- Tool 1: Description
-- Tool 2: Description
-
-## Lab Exercises
-
-### Exercise 1: Basic
-Hands-on practice scenario
-
-### Exercise 2: Intermediate
-More advanced practice
-
-## Common Pitfalls
-
-- Pitfall 1
-- Pitfall 2
+Tuning note: a private Collaborator server changes the domain, so also
+alert on scanner-rate bursts of error responses from a single client.
 
 ## References
 
-- [OWASP](https://owasp.org)
-- [HackTheBox Academy](https://academy.hackthebox.com)
+- Official docs: https://portswigger.net/burp/documentation
+- Web Security Academy: https://portswigger.net/web-security
+- MITRE ATT&CK: T1190 Exploit Public-Facing Application
 
 ---
 

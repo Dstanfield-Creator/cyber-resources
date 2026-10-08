@@ -1,6 +1,6 @@
 # Host and Port Scanning
 
-> **Source:** Confluence Page 557801
+> **Status:** Reference
 > **Updated:** 2026-01-30
 
 ## Overview

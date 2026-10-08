@@ -1,61 +1,91 @@
 # Protocol Analysis
 
-> **Status:** Skeleton — Content to be added from Confluence
-> **Updated:** 2026-07-20
+> **Status:** Reference
+> **Updated:** 2026-10-08
 
 ## Overview
 
-Add topic overview here.
+Protocol analysis is the defensive practice of inspecting captured network
+traffic to understand what happened on the wire: which hosts talked, over which
+protocols, and whether the behaviour is benign or malicious. It is the analyst's
+core technique for validating alerts, scoping incidents and hunting. This page is
+a practical how-to for working against lab or incident PCAPs, not an attack
+method.
 
-## Prerequisites
+It supports investigation of many ATT&CK techniques (C2, lateral movement,
+exfiltration) but is itself a blue-team analysis workflow.
 
-- Item 1
-- Item 2
+## How It Works
 
-## Key Concepts
+A capture (PCAP) records frames that tools reassemble into flows and
+application-layer transactions. Two complementary approaches:
 
-- Concept 1
-- Concept 2
-- Concept 3
+- **Packet-level** (Wireshark / tshark) - exact fields, handshakes, payloads.
+- **Flow / log-level** (Zeek) - summarised connection and protocol logs that
+  scale to large captures and feed a SIEM.
 
-## Step-by-Step Guide
+A good workflow starts broad (who talked to whom) and narrows to specific flows.
 
-### Step 1: Setup
-Description here
+## Analyse
+
+Work from a copy of the capture in a dedicated analysis directory. Example
+commands against a lab file `lab.pcap` (hosts on 192.0.2.0/24):
 
 ```bash
-# Commands here
+# Top talkers and conversations
+tshark -r lab.pcap -q -z conv,ip
+
+# Protocol hierarchy - what is actually in the capture
+tshark -r lab.pcap -q -z io,phs
+
+# Extract DNS queries (spot tunnelling by length/entropy)
+tshark -r lab.pcap -Y dns.flags.response==0 -T fields -e dns.qry.name
+
+# HTTP requests: method, host, URI, user-agent
+tshark -r lab.pcap -Y http.request \
+  -T fields -e ip.dst -e http.host -e http.request.uri -e http.user_agent
 ```
 
-### Step 2: Execution
-Description here
+Generate Zeek logs for a structured, greppable view:
 
 ```bash
-# Commands here
+zeek -r lab.pcap
+
+# Long-lived low-byte flows (possible beaconing)
+cat conn.log | zeek-cut id.orig_h id.resp_h duration orig_bytes \
+  | sort -k3 -n -r | head
+
+# Rare destinations by connection count
+cat conn.log | zeek-cut id.resp_h | sort | uniq -c | sort -n | head
 ```
 
-## Tools & Resources
+Checklist while analysing:
 
-- Tool 1: Description
-- Tool 2: Description
+| Question | Where to look |
+| --- | --- |
+| Who are the top talkers? | `tshark -z conv,ip`, Zeek conn.log |
+| What protocols are present? | `tshark -z io,phs` |
+| Any beaconing rhythm? | conn.log duration + inter-arrival times |
+| DNS/ICMP tunnelling? | query length, entropy, volume |
+| Cleartext credentials? | http/ftp streams (lab only) |
 
-## Lab Exercises
+## Lab
 
-### Exercise 1: Basic
-Hands-on practice scenario
+Isolated lab (host-only 192.0.2.0/24):
 
-### Exercise 2: Intermediate
-More advanced practice
-
-## Common Pitfalls
-
-- Pitfall 1
-- Pitfall 2
+1. Capture traffic you generate between VMs you own (a web request, a DNS
+   lookup, a simulated beacon).
+2. Reproduce each command above and confirm you can identify the flow you
+   created.
+3. Build a short "normal vs anomalous" reference from your own captures to speed
+   future triage.
 
 ## References
 
-- [OWASP](https://owasp.org)
-- [HackTheBox Academy](https://academy.hackthebox.com)
+- Wireshark / tshark documentation - https://www.wireshark.org/docs/
+- Zeek documentation - https://docs.zeek.org/
+- MITRE ATT&CK (technique context) - https://attack.mitre.org/
+- NIST SP 800-86 (Forensic Techniques) - https://csrc.nist.gov/
 
 ---
 

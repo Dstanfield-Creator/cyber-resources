@@ -1,61 +1,97 @@
 # Password Cracking
 
-> **Status:** Skeleton — Content to be added from Confluence
-> **Updated:** 2026-07-20
+> **Status:** Reference
+> **Updated:** 2026-10-08
 
 ## Overview
 
-Add topic overview here.
+Password cracking is the offline recovery of plaintext credentials from captured
+hashes. Because it happens on attacker-controlled hardware, it produces no logs
+on the victim network. Defence therefore centres on preventing hash theft,
+detecting the dumping that precedes cracking, and making hashes expensive to
+crack.
 
-## Prerequisites
+Relevant MITRE ATT&CK techniques:
 
-- Item 1
-- Item 2
+| ID | Name |
+| --- | --- |
+| T1110.002 | Brute Force: Password Cracking |
+| T1003 | OS Credential Dumping |
+| T1555 | Credentials from Password Stores |
 
-## Key Concepts
+## How It Works
 
-- Concept 1
-- Concept 2
-- Concept 3
+The chain is: obtain hashes, then crack them offline.
 
-## Step-by-Step Guide
+- **Acquisition** - dumping the SAM/LSASS, `/etc/shadow`, NTDS.dit, or capturing
+  network hashes (T1003). This is the detectable part.
+- **Attack modes** - dictionary, rule-mutated wordlists, mask/brute force, and
+  hybrid approaches, run on GPUs at high speed.
+- **Hash weaknesses** - fast/unsalted algorithms (MD5, unsalted SHA-1, NTLM)
+  fall quickly; slow salted KDFs (bcrypt, scrypt, Argon2, PBKDF2) resist.
 
-### Step 1: Setup
-Description here
+The cracking itself is silent; the theft and the subsequent credential reuse are
+where telemetry exists.
 
-```bash
-# Commands here
+## Detect
+
+Focus detection on acquisition and reuse, not the crack:
+
+| Source | Signal |
+| --- | --- |
+| Sysmon 10 | Suspicious process accessing lsass.exe |
+| Windows Security 4688 | Credential-dumping tool command lines |
+| Linux auditd | Reads of /etc/shadow by non-root processes |
+| DC logs / 4662 | Abnormal NTDS.dit / DCSync-style access |
+| Auth logs | Sudden successful logins after a prior breach window |
+
+```yaml
+title: Suspicious LSASS Memory Access
+logsource:
+    product: windows
+    category: process_access
+detection:
+    selection:
+        TargetImage|endswith: '\lsass.exe'
+        GrantedAccess|contains:
+            - '0x1010'
+            - '0x1410'
+    filter:
+        SourceImage|endswith:
+            - '\MsMpEng.exe'
+            - '\wininit.exe'
+    condition: selection and not filter
+falsepositives:
+    - Some EDR and backup agents
+level: high
 ```
 
-### Step 2: Execution
-Description here
+## Mitigate
 
-```bash
-# Commands here
-```
+- Store passwords with slow, salted KDFs (Argon2id, bcrypt, scrypt, PBKDF2).
+- Enforce length-first password policy and screen against breached-password lists.
+- Deploy MFA so a cracked password alone is insufficient.
+- Protect credential stores: Credential Guard, LSASS protection, restricted
+  shadow/NTDS access.
+- Rotate credentials promptly after any suspected hash exposure.
 
-## Tools & Resources
+## Lab
 
-- Tool 1: Description
-- Tool 2: Description
+Isolated lab (no internet, 192.0.2.0/24):
 
-## Lab Exercises
-
-### Exercise 1: Basic
-Hands-on practice scenario
-
-### Exercise 2: Intermediate
-More advanced practice
-
-## Common Pitfalls
-
-- Pitfall 1
-- Pitfall 2
+1. Generate test hashes in several algorithms and compare relative crack time to
+   illustrate why KDF choice matters.
+2. Trigger a benign LSASS access from a known tool and confirm your Sysmon rule
+   fires.
+3. Re-hash the same passwords with Argon2id and demonstrate the resistance
+   improvement.
 
 ## References
 
-- [OWASP](https://owasp.org)
-- [HackTheBox Academy](https://academy.hackthebox.com)
+- MITRE ATT&CK T1110.002 - https://attack.mitre.org/techniques/T1110/002/
+- MITRE ATT&CK T1003 - https://attack.mitre.org/techniques/T1003/
+- OWASP Password Storage Cheat Sheet - https://cheatsheetseries.owasp.org/
+- NIST SP 800-63B (Authentication) - https://pages.nist.gov/800-63-3/
 
 ---
 

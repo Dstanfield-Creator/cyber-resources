@@ -1,61 +1,92 @@
 # SQL Injection
 
-> **Status:** Skeleton — Content to be added from Confluence
-> **Updated:** 2026-07-20
+> **Status:** Reference
+> **Updated:** 2026-10-08
 
 ## Overview
 
-Add topic overview here.
+SQL injection (SQLi) occurs when untrusted input is concatenated into a database
+query, letting an actor alter the query's logic to read, modify or exfiltrate
+data. It remains one of the highest-impact web flaws. Defenders detect it through
+web, WAF and database telemetry and prevent it with parameterised queries.
 
-## Prerequisites
+Relevant MITRE ATT&CK technique:
 
-- Item 1
-- Item 2
+| ID | Name |
+| --- | --- |
+| T1190 | Exploit Public-Facing Application |
 
-## Key Concepts
+Maps to OWASP Top 10 A03 (Injection) and OWASP WSTG injection tests.
 
-- Concept 1
-- Concept 2
-- Concept 3
+## How It Works
 
-## Step-by-Step Guide
+Conceptually, input that should be data is interpreted as query syntax. Variants:
 
-### Step 1: Setup
-Description here
+- **In-band** - results returned directly (error-based or UNION-based).
+- **Blind** - no direct output; the attacker infers data from boolean responses
+  or time delays.
+- **Out-of-band** - the database is coerced into making an external request
+  carrying data.
 
-```bash
-# Commands here
+The observable signatures are SQL metacharacters and keywords in parameters,
+database errors surfacing to users, and anomalous query patterns.
+
+## Detect
+
+Log sources and signals:
+
+| Source | Signal |
+| --- | --- |
+| WAF | Injection signatures in parameters and headers |
+| Web access logs | SQL keywords/metacharacters in query strings |
+| App logs | Database error messages, stack traces |
+| DB audit logs | Unusual UNION/OR-based queries, bulk reads, schema access |
+
+```yaml
+title: SQL Injection Pattern In Web Request
+logsource:
+    category: webserver
+detection:
+    selection:
+        cs_uri_query|contains:
+            - 'UNION SELECT'
+            - ' OR 1=1'
+            - 'information_schema'
+            - 'SLEEP('
+    condition: selection
+falsepositives:
+    - Legitimate search or reporting queries containing SQL keywords
+level: high
 ```
 
-### Step 2: Execution
-Description here
+Pair request-side detection with database audit logs: a single web session that
+suddenly reads `information_schema` or dumps a large row count is high fidelity.
 
-```bash
-# Commands here
-```
+## Mitigate
 
-## Tools & Resources
+- Use parameterised queries / prepared statements everywhere; never concatenate
+  input into SQL.
+- Apply input validation and context-aware output handling as defence in depth.
+- Enforce least-privilege database accounts (no DDL/admin rights for the app).
+- Disable verbose database errors in production.
+- Deploy a tuned WAF and alert on database audit anomalies.
 
-- Tool 1: Description
-- Tool 2: Description
+## Lab
 
-## Lab Exercises
+Isolated lab (deliberately vulnerable app + database, host-only 192.0.2.0/24):
 
-### Exercise 1: Basic
-Hands-on practice scenario
-
-### Exercise 2: Intermediate
-More advanced practice
-
-## Common Pitfalls
-
-- Pitfall 1
-- Pitfall 2
+1. Exercise a benign injection against your own lab app and confirm WAF and DB
+   audit logs capture it and trigger the Sigma rule.
+2. Convert the query to a parameterised statement and verify the injection no
+   longer alters behaviour.
+3. Lower the app's DB privileges and confirm the blast radius shrinks.
 
 ## References
 
-- [OWASP](https://owasp.org)
-- [HackTheBox Academy](https://academy.hackthebox.com)
+- MITRE ATT&CK T1190 - https://attack.mitre.org/techniques/T1190/
+- OWASP SQL Injection - https://owasp.org/www-community/attacks/SQL_Injection
+- OWASP SQLi Prevention Cheat Sheet - https://cheatsheetseries.owasp.org/
+- OWASP Top 10 A03 - https://owasp.org/Top10/
 
 ---
 

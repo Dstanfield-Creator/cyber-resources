@@ -1,61 +1,74 @@
 # Hydra
 
-> **Status:** Skeleton — Content to be added from Confluence
-> **Updated:** 2026-07-20
+> **Status:** Reference
+> **Updated:** 2026-10-08
 
 ## Overview
 
-Add topic overview here.
+Hydra (THC-Hydra) is an open-source online password-guessing tool. It
+tests credentials against live network services (SSH, FTP, HTTP forms,
+RDP, and many others) in parallel. "Online" means it talks to the real
+service rather than cracking a captured hash offline. In a lab it is used
+to demonstrate weak-credential risk and, for this reference, to show what
+a brute-force attempt looks like to a defender. Usage stays lab-scoped
+and non-weaponised.
 
-## Prerequisites
+## Install
 
-- Item 1
-- Item 2
+| Method | Source |
+| --- | --- |
+| Kali package | `sudo apt install hydra` |
+| Git | `git clone https://github.com/vanhauser-thc/thc-hydra` |
 
-## Key Concepts
+## Common Usage
 
-- Concept 1
-- Concept 2
-- Concept 3
-
-## Step-by-Step Guide
-
-### Step 1: Setup
-Description here
-
-```bash
-# Commands here
-```
-
-### Step 2: Execution
-Description here
+Only ever run against a lab account on a host you own, for example
+`192.0.2.40`. Use a tiny, self-made wordlist in the lab.
 
 ```bash
-# Commands here
+# SSH, single known lab user, short demo wordlist
+hydra -l analyst -P lab-words.txt ssh://192.0.2.40 -t 4
+
+# FTP with a user list and a pass list
+hydra -L users.txt -P lab-words.txt ftp://192.0.2.40
 ```
 
-## Tools & Resources
+Keep the thread count (`-t`) low and the wordlist small; the goal in a
+lab is to observe telemetry, not to actually crack anything.
 
-- Tool 1: Description
-- Tool 2: Description
+## Detect
 
-## Lab Exercises
+Online guessing is high-signal because each attempt is a real login.
 
-### Exercise 1: Basic
-Hands-on practice scenario
+- **Windows:** bursts of Security Event ID 4625 (failed logon) from one
+  source, often followed by a 4624 (success) if a credential is found.
+- **Linux:** repeated `Failed password` lines in `/var/log/auth.log` for
+  SSH, many per second from one IP.
+- **Web forms:** many POSTs to a login endpoint with varying passwords
+  and a pattern of 401/200 responses.
+- **Network:** many short-lived connections to one service port.
 
-### Exercise 2: Intermediate
-More advanced practice
+```yaml
+title: Brute Force - Failed Logon Burst
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    EventID: 4625
+  timeframe: 1m
+  condition: selection | count() by IpAddress > 20
+level: medium
+```
 
-## Common Pitfalls
-
-- Pitfall 1
-- Pitfall 2
+Tuning note: pair the failure-burst rule with a "many failures then a
+success" correlation to prioritise likely-compromised accounts, and
+exclude known service accounts that fail benignly.
 
 ## References
 
-- [OWASP](https://owasp.org)
-- [HackTheBox Academy](https://academy.hackthebox.com)
+- Project page: https://github.com/vanhauser-thc/thc-hydra
+- MITRE ATT&CK: T1110 Brute Force; T1110.001 Password Guessing
 
 ---
 
